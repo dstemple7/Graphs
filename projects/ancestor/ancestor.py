@@ -32,24 +32,43 @@ class Queue():
 #     return neighbors
 
 def earliest_ancestor(ancestors, starting_node):
-    visited = set()
+    # Init empty dict to hold graph of family tree
+    # Init patriarch as the oldest, i.e. one w/no parents, value = -1
+    family_tree = {}
+    patriarch = -1
+
+    # create the graph iterating over the ancestors passed in
+    # for graph, node is a set with parent at zeroth index and child at first index and edge their connection
+    for a in ancestors:
+        parent = a[0]
+        child = a[1]
+        # if the child is not in the family tree dict yet, add to the family tree at key of child an empty set/value of parent(s)
+        if child not in family_tree:
+            family_tree[child] = set()
+        # add to the set at the child's key the value(s) of the parent(s)
+        family_tree[child].add(parent)
+
+    # do a BFS and return last ancestor or as base case, the patriarch default value meaning the child is the patriarch
     q = Queue()
-    q.enqueue([starting_node])
+    q.enqueue(starting_node)
 
     while q.size() > 0:
-        path = q.dequeue()
+        
+        # take the first one off the queue
+        cur = q.dequeue()
 
-        v = path[-1]
-
-        if v not in visited:
-            visited.add(v)
-            # print(visited)
-            neighbors = []
-
-            for f in ancestors:
-                if f[1] == v:
-                    neighbors.append(f[0])
-
-            for neighbor in neighbors:
-                # path_copy = path + [neighbor]
-                q.enqueue(path + [neighbor])
+        # if it's in the family tree
+        if cur in family_tree:
+            # initialize the matriarch as none
+            matriarch = None
+            # for the parent(s) in the family tree of the current node
+            for parent in family_tree[cur]:
+                # if the matriarch still is none or greater then the parent, the parent is the matriarch
+                if matriarch is None or matriarch > parent:
+                    matriarch = parent
+                # put the parent back on the queue
+                q.enqueue(parent)
+            # if the matriarch is not None, then the matriarch is the patriarch (i.e. first ances)
+            if matriarch is not None:
+                patriarch = matriarch
+    return patriarch
