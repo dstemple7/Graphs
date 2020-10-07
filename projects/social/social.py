@@ -1,3 +1,19 @@
+import random
+import math
+
+class Queue():
+    def __init__(self):
+        self.queue = []
+    def enqueue(self, value):
+        self.queue.append(value)
+    def dequeue(self):
+        if self.size() > 0:
+            return self.queue.pop(0)
+        else:
+            return None
+    def size(self):
+        return len(self.queue)
+
 class User:
     def __init__(self, name):
         self.name = name
@@ -29,27 +45,31 @@ class SocialGraph:
         self.friendships[self.last_id] = set()
 
     def populate_graph(self, num_users, avg_friendships):
-        """
-        Takes a number of users and an average number of friendships
-        as arguments
-
-        Creates that number of users and a randomly distributed friendships
-        between those users.
-
-        The number of users must be greater than the average number of friendships.
-        """
-        # Reset graph
+        """Takes a number of users and an average number of friendships as arguments. Creates that number of users and a randomly distributed friendships between those users. The number of users must be greater than the average number of friendships."""
+        
         self.last_id = 0
         self.users = {}
         self.friendships = {}
-        # !!!! IMPLEMENT ME
 
-        # Add users
-
-        # Create friendships
+        for i in range(0, num_users):
+            self.add_user(f"User {i}")
+        
+        possible_friendships = []
+        
+        for user_id in self.users:
+            for friend_id in range(user_id + 1, self.last_id + 1):
+                possible_friendships.append((user_id, friend_id))
+        
+        random.shuffle(possible_friendships)
+        
+        for i in range(0, math.floor(num_users * avg_friendships / 2)):
+            friendship = possible_friendships[i]
+            self.add_friendship(friendship[0], friendship[1])
 
     def get_all_social_paths(self, user_id):
         """
+        Like 6 degrees of kevin bacon, kinda
+
         Takes a user's user_id as an argument
 
         Returns a dictionary containing every user in that user's
@@ -59,8 +79,28 @@ class SocialGraph:
         """
         visited = {}  # Note that this is a dictionary, not a set
         # !!!! IMPLEMENT ME
-        return visited
+        # BFT
+        q = Queue()
 
+        q.enqueue([user_id])
+
+        while q.size() > 0:
+            cur = q.dequeue()
+
+            i = cur[-1]
+
+            if i not in visited:
+                visited[i] = cur
+
+                friends = self.friendships[i]
+
+                for i in friends:
+                    cur_new = cur.copy()
+                    cur_new.append(i)
+
+                    q.enqueue(cur_new)
+        
+        return visited
 
 if __name__ == '__main__':
     sg = SocialGraph()
